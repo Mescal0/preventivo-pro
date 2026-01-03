@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Genera icone - Preventivo PRO</title>
+  <style>
+    body { font-family: -apple-system, system-ui, Arial; margin: 16px; }
+    button { padding: 10px 12px; border: 1px solid #ccc; border-radius: 12px; background:#fff; margin-right:10px; }
+    canvas { display:block; margin: 12px 0; border:1px solid #eee; border-radius:16px; }
+  </style>
+</head>
+<body>
+  <h2>Generatore icone (PP)</h2>
+  <p>Premi i bottoni per scaricare <b>icon-192.png</b> e <b>icon-512.png</b>.</p>
+
+  <button onclick="downloadIcon(192)">Scarica 192</button>
+  <button onclick="downloadIcon(512)">Scarica 512</button>
+
+  <canvas id="c" width="256" height="256"></canvas>
+
+<script>
+function draw(size){
+  const c = document.createElement("canvas");
+  c.width = size; c.height = size;
+  const ctx = c.getContext("2d");
+
+  // fondo
+  ctx.fillStyle = "#111";
+  roundRect(ctx, 0, 0, size, size, Math.floor(size * 0.22));
+  ctx.fill();
+
+  // testo
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${Math.floor(size*0.38)}px -apple-system, system-ui, Arial`;
+  ctx.fillText("PP", size/2, size/2 - size*0.03);
+
+  // sottotitolo piccolo
+  ctx.font = `700 ${Math.floor(size*0.10)}px -apple-system, system-ui, Arial`;
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.fillText("Preventivo", size/2, size/2 + size*0.22);
+
+  return c;
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function downloadIcon(size){
+  const canvas = draw(size);
+  const a = document.createElement("a");
+  a.download = `icon-${size}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+
+  // preview
+  const prev = document.getElementById("c");
+  const pctx = prev.getContext("2d");
+  pctx.clearRect(0,0,prev.width,prev.height);
+  pctx.drawImage(canvas, 0, 0, prev.width, prev.height);
+}
+</script>
+</body>
+</html>

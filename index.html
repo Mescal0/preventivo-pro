@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>Preventivo PRO Ultimate</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <style>
+    :root { --p: #0066cc; --bg: #f0f2f5; --txt: #333; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--txt); padding-bottom: 40px; }
+    
+    /* Header */
+    header { background: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 18px; color: var(--p); font-weight: 800; }
+    
+    /* Layout */
+    .wrap { max-width: 800px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card h2 { margin: 0 0 12px 0; font-size: 16px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; color: #444; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* Grid & Inputs */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row { display: flex; gap: 10px; align-items: center; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+    input:focus { outline: 2px solid var(--p); border-color: transparent; }
+    
+    /* Bottoni */
+    button { padding: 10px 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px; transition: 0.2s; }
+    .btn-primary { background: var(--p); color: white; }
+    .btn-danger { background: #ffebee; color: #c62828; }
+    .btn-sec { background: #e3f2fd; color: var(--p); }
+    .btn-icon { padding: 8px; background: #eee; border-radius: 50%; }
+
+    /* Firma Canvas */
+    canvas#signaturePad { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 150px; background: #fff; touch-action: none; }
+
+    /* Modale Configurazione */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal.open { display: flex; }
+    .modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; border-radius: 12px; padding: 20px; }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .pill { background: #f5f5f5; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: 1px solid #ddd; }
+    .pill input:checked + span { color: var(--p); font-weight: bold; }
+    .kpi-box { background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #eee; }
+    .kpi-val { font-size: 18px; font-weight: bold; color: var(--p); }
+
+    /* Foto Grid */
+    .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 10px; }
+    .foto-item { aspect-ratio: 1; position: relative; border-radius: 8px; overflow: hidden; }
+    .foto-item img { width: 100%; height: 100%; object-fit: cover; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Preventivo PRO</h1>
+    <span style="font-size:11px; color:#666;">Ultimate Edition</span>
+  </div>
+  <div class="row">
+    <button class="btn-sec" onclick="openConfig()">⚙️ Configura</button>
+    <button class="btn-primary" onclick="newQuote()">➕ Nuovo</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div style="flex:1;">
+        <h2>Dati Cliente</h2>
+        <div class="grid2">
+          <div><label>N. Prev</label><input id="qNum"></div>
+          <div><label>Data</label><input type="date" id="qDate"></div>
+          <div><label>Nome</label><input id="cName" placeholder="Mario Rossi"></div>
+          <div><label>Tel/Cell</label><input id="cPhone" placeholder="+39..."></div>
+        </div>
+        <div style="margin-top:10px;"><label>Indirizzo Cantiere</label><input id="cAddr" placeholder="Via Roma 10..."></div>
+      </div>
+      
+      <div style="width:80px; text-align:center; margin-left:10px;">
+        <img id="logoImg" src="" style="width:100%; height:auto; display:none; border-radius:4px; border:1px solid #ddd;">
+        <label class="pill" style="margin-top:5px; font-size:10px; justify-content:center;">
+          📷 Logo
+          <input type="file" id="logoInput" accept="image/*" class="hidden">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>
+      Stanze & Lavorazioni
+      <button class="btn-sec" style="padding:5px 10px; font-size:12px;" onclick="addRoom()">+ Stanza</button>
+    </h2>
+    <div id="roomsContainer"></div>
+  </div>
+
+  <div class="card" style="background:#e3f2fd; border:1px solid #bbdefb;">
+    <h2>🎨 Stima Materiali (MQ Totali)</h2>
+    <div id="materialsList" style="font-size:14px; line-height:1.6;"></div>
+    <div style="font-size:11px; color:#666; margin-top:5px;">*Calcolo basato sulla somma dei metri quadri per tipologia.</div>
+  </div>
+
+  <div class="card">
+    <h2>
+      Foto Cantiere
+      <label class="btn-sec" style="font-size:12px; padding:5px 10px;">
+        📷 Aggiungi
+        <input type="file" id="camInput" accept="image/*" capture="environment" class="hidden">
+      </label>
+    </h2>
+    <div id="photoGrid" class="foto-grid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Totali</h2>
+    <div class="grid2">
+      <div><label>Manodopera (€)</label><input type="number" id="laborCost" value="0" oninput="calc()"></div>
+      <div><label>Sconto (€)</label><input type="number" id="discount" value="0" oninput="calc()"></div>
+      <div><label>IVA (%)</label><select id="ivaRate" onchange="calc()"><option value="0">0%</option><option value="10">10%</option><option value="22" selected>22%</option></select></div>
+    </div>
+    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+    <div class="grid2" style="margin-bottom:15px;">
+      <div class="kpi-box"><div class="label" style="font-size:11px;">IMPONIBILE</div><div class="kpi-val" id="netTotal">0€</div></div>
+      <div class="kpi-box" style="background:#e8f5e9; border-color:#c8e6c9;"><div class="label" style="font-size:11px;">TOTALE</div><div class="kpi-val" style="color:#2e7d32;" id="grandTotal">0€</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>
+      ✍️ Firma per Accettazione
+      <button class="btn-danger" style="padding:2px 8px; font-size:11px;" onclick="clearSignature()">Cancella</button>
+    </h2>
+    <canvas id="signaturePad" width="600" height="200"></canvas>
+    <div style="font-size:11px; color:#666; text-align:center; margin-top:5px;">Firma qui sopra col dito</div>
+  </div>
+
+  <div class="row" style="margin-bottom:40px;">
+    <button class="btn-sec" style="flex:1" onclick="openArchive()">📂 Archivio</button>
+    <button class="btn-primary" style="flex:1" onclick="downloadPDF()">📄 Scarica PDF</button>
+    <button style="background:#25D366; color:#fff; flex:1;" onclick="sendWhatsapp()">📲 WhatsApp</button>
+  </div>
+
+</div>
+
+<div id="configModal" class="modal">
+  <div class="modal-content">
+    <h2>⚙️ Impostazioni</h2>
+    
+    <h3>Listino Prezzi (€/mq)</h3>
+    <div id="priceListEditor"></div>
+    <div class="row" style="margin-top:10px;">
+      <input id="newPriceName" placeholder="Nome (es. Stucco)" style="flex:2">
+      <input id="newPriceVal" type="number" placeholder="€" style="flex:1">
+      <button class="btn-primary" onclick="addPriceItem()">+</button>
+    </div>
+    <button class="btn-danger" style="margin-top:10px; font-size:12px;" onclick="resetPrices()">⚠️ Ripristina Prezzi Base</button>
+
+    <hr>
+
+    <h3>Termini & Pagamenti</h3>
+    <textarea id="termsText" rows="4" placeholder="Es. Pagamento 30% acconto, saldo fine lavori. IBAN..."></textarea>
+    
+    <div style="margin-top:20px; text-align:right;">
+      <button class="btn-primary" onclick="saveConfig()">Salva e Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.9/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.9/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+<script>
+/* --- CONFIGURAZIONE INIZIALE --- */
+const defaultPrices = [
+  { name: "Traspirante", price: 9 },
+  { name: "Lavabile", price: 12 },
+  { name: "Smalto", price: 14 },
+  { name: "Calce", price: 15 },
+  { name: "Verniciatura", price: 25 },
+  { name: "Rasatura", price: 15 },
+  { name: "Antimuffa", price: 5 },
+  { name: "Impalcatura", price: 8 }
+];
+
+let prices = JSON.parse(localStorage.getItem('myPrices')) || [...defaultPrices];
+let terms = localStorage.getItem('myTerms') || "Pagamento: 30% all'ordine, saldo a fine lavori.\nIBAN: IT00 X000 0000 0000";
+
+/* --- STATO APP --- */
+let rooms = [];
+let photos = [];
+const db = new Dexie('UltimaDB');
+db.version(1).stores({ quotes: '++id, date, name' });
+
+/* --- INIT --- */
+const el = id => document.getElementById(id);
+const today = () => new Date().toISOString().split('T')[0];
+el('qDate').value = today();
+el('qNum').value = new Date().getFullYear() + '/001';
+
+// Firma Digitale
+const canvas = el('signaturePad');
+const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+function resizeCanvas() { const ratio = Math.max(window.devicePixelRatio || 1, 1); canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; canvas.getContext("2d").scale(ratio, ratio); signaturePad.clear(); }
+window.onresize = resizeCanvas;
+resizeCanvas();
+
+// Caricamento Logo salvato
+const savedLogo = localStorage.getItem('logoData');
+if(savedLogo) { el('logoImg').src = savedLogo; el('logoImg').style.display='block'; }
+el('logoInput').onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  const b64 = await toBase64(f);
+  localStorage.setItem('logoData', b64);
+  el('logoImg').src = b64; el('logoImg').style.display='block';
+};
+
+/* --- GESTIONE STANZE --- */
+function addRoom() {
+  rooms.push({ 
+    id: Date.now(), 
+    name: `Stanza ${rooms.length+1}`, 
+    l:0, w:0, h:0, 
+    wallItem: prices[0].name, 
+    ceilItem: prices[0].name, 
+    extra: [], 
+    hasCeil: true 
+  });
+  renderRooms();
+  calc();
+}
+
+function renderRooms() {
+  const c = el('roomsContainer'); c.innerHTML = '';
+  // Crea le opzioni per le select in base al listino attuale
+  const opts = prices.map(p => `<option value="${p.name}">${p.name} (${p.price}€)</option>`).join('');
+  const checkboxes = prices.filter(p => p.price < 9).map((p, i) => `<label class="pill"><input type="checkbox" data-idx="${i}" onchange="toggleExtra(this, '__IDX__', '${p.name}')"> ${p.name}</label>`).join('');
+
+  rooms.forEach((r, i) => {
+    let box = checkboxes.replace(/__IDX__/g, i);
+    // Ripristina check
+    r.extra.forEach(ex => { box = box.replace(`data-idx="${prices.findIndex(p=>p.name===ex)}"`, `checked`); });
+
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.background = '#fcfcfc';
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+        <input value="${r.name}" style="font-weight:bold; width:60%" oninput="rooms[${i}].name=this.value">
+        <button class="btn-danger" style="padding:5px 10px;" onclick="rooms.splice(${i},1); renderRooms(); calc()">🗑️</button>
+      </div>
+      <div class="grid2">
+        <div><label>Lungh.</label><input type="number" value="${r.l||''}" placeholder="0" oninput="rooms[${i}].l=+this.value; calc()"></div>
+        <div><label>Largh.</label><input type="number" value="${r.w||''}" placeholder="0" oninput="rooms[${i}].w=+this.value; calc()"></div>
+        <div><label>Alt.</label><input type="number" value="${r.h||''}" placeholder="0" oninput="rooms[${i}].h=+this.value; calc()"></div>
+      </div>
+      <hr style="border-top:1px dashed #ddd; margin:10px 0;">
+      <div class="grid2">
+        <div>
+          <label>Pareti</label>
+          <select onchange="rooms[${i}].wallItem=this.value; calc()">
+            ${opts.replace(`value="${r.wallItem}"`, `value="${r.wallItem}" selected`)}
+          </select>
+        </div>
+        <div>
+          <label class="pill" style="margin-bottom:4px;"><input type="checkbox" onchange="rooms[${i}].hasCeil=this.checked; renderRooms(); calc()" ${r.hasCeil?'checked':''}> Soffitto</label>
+          ${r.hasCeil ? `<select onchange="rooms[${i}].ceilItem=this.value; calc()">${opts.replace(`value="${r.ceilItem}"`, `value="${r.ceilItem}" selected`)}</select>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label>Extra:</label> ${box}
+      </div>
+    `;
+    c.appendChild(div);
+  });
+}
+
+function toggleExtra(chk, roomIdx, name) {
+  const r = rooms[roomIdx];
+  if(chk.checked) r.extra.push(name);
+  else r.extra = r.extra.filter(x => x !== name);
+  calc();
+}
+
+/* --- CALCOLI & MATERIALI --- */
+function calc() {
+  let totalWork = 0;
+  let materials = {}; // Oggetto per accumulare i MQ
+
+  rooms.forEach(r => {
+    const wallArea = (r.l + r.w) * 2 * r.h;
+    const ceilArea = r.l * r.w;
+    
+    // Costo Pareti
+    const wp = prices.find(p => p.name === r.wallItem)?.price || 0;
+    totalWork += wallArea * wp;
+    // Accumulo Materiale Pareti
+    materials[r.wallItem] = (materials[r.wallItem] || 0) + wallArea;
+
+    // Costo Soffitto
+    if(r.hasCeil) {
+      const cp = prices.find(p => p.name === r.ceilItem)?.price || 0;
+      totalWork += ceilArea * cp;
+      // Accumulo Materiale Soffitto
+      materials[r.ceilItem] = (materials[r.ceilItem] || 0) + ceilArea;
+    }
+
+    // Extra
+    r.extra.forEach(ex => {
+      const ep = prices.find(p => p.name === ex)?.price || 0;
+      totalWork += (wallArea + (r.hasCeil?ceilArea:0)) * ep; // Applichiamo extra su tutto? Semplifichiamo: solo pareti per ora o tutto. Facciamo pareti.
+    });
+  });
+
+  const labor = +el('laborCost').value || 0;
+  const disc = +el('discount').value || 0;
+  const net = totalWork + labor - disc;
+  const ivaPct = +el('ivaRate').value;
+  const final = net * (1 + ivaPct/100);
+
+  el('netTotal').innerText = net.toFixed(2) + '€';
+  el('grandTotal').innerText = final.toFixed(2) + '€';
+
+  // Render Materiali
+  let matHtml = '';
+  for (const [name, mq] of Object.entries(materials)) {
+    if(mq > 0) matHtml += `<div>• <b>${name}:</b> ${mq.toFixed(1)} mq</div>`;
+  }
+  el('materialsList').innerHTML = matHtml || '<span style="color:#999">Aggiungi stanze e misure...</span>';
+
+  return { totalWork, labor, disc, net, ivaPct, final, materials };
+}
+
+/* --- FOTO --- */
+el('camInput').onchange = async e => {
+  for(let f of e.target.files) {
+    const c = await imageCompression(f, { maxSizeMB: 1, maxWidthOrHeight: 1200 });
+    photos.push(c);
+  }
+  renderPhotos();
+};
+function renderPhotos() {
+  el('photoGrid').innerHTML = photos.map((p,i) => {
+    return `<div class="foto-item"><img src="${URL.createObjectURL(p)}"><button onclick="photos.splice(${i},1);renderPhotos()" style="position:absolute;top:0;right:0;background:red;color:white;border:none;">×</button></div>`;
+  }).join('');
+}
+
+/* --- CONFIGURAZIONE --- */
+function openConfig() {
+  el('configModal').classList.add('open');
+  el('termsText').value = terms;
+  renderPriceEditor();
+}
+function renderPriceEditor() {
+  el('priceListEditor').innerHTML = prices.map((p,i) => `
+    <div class="row" style="margin-bottom:5px;">
+      <input value="${p.name}" onchange="prices[${i}].name=this.value">
+      <input type="number" value="${p.price}" style="width:70px" onchange="prices[${i}].price=+this.value">
+      <button class="btn-danger" onclick="prices.splice(${i},1); renderPriceEditor()">×</button>
+    </div>
+  `).join('');
+}
+function addPriceItem() {
+  const n = el('newPriceName').value;
+  const v = el('newPriceVal').value;
+  if(n && v) { prices.push({name:n, price:+v}); renderPriceEditor(); el('newPriceName').value=''; }
+}
+function saveConfig() {
+  terms = el('termsText').value;
+  localStorage.setItem('myPrices', JSON.stringify(prices));
+  localStorage.setItem('myTerms', terms);
+  el('configModal').classList.remove('open');
+  renderRooms(); // Ricarica le select con nuovi prezzi
+  calc();
+}
+function resetPrices() {
+  if(confirm("Tornare ai prezzi di default?")) {
+    prices = [...defaultPrices];
+    renderPriceEditor();
+  }
+}
+
+/* --- PDF GENERATION --- */
+async function downloadPDF() {
+  if(signaturePad.isEmpty()) { if(!confirm("Manca la firma. Scaricare lo stesso?")) return; }
+  
+  const d = calc();
+  const logo = localStorage.getItem('logoData');
+  const signImg = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
+  
+  // Foto
+  const pdfPhotos = [];
+  for(let p of photos) pdfPhotos.push({ image: await toBase64(p), width: 150, margin:[5,5] });
+
+  // Materiali stringa
+  let matStr = '';
+  for (const [name, mq] of Object.entries(d.materials)) matStr += `${name}: ${mq.toFixed(1)} mq\n`;
+
+  const doc = {
+    content: [
+      {
+        columns: [
+          logo ? { image: logo, width: 80 } : {},
+          { text: 'PREVENTIVO', fontSize: 24, bold: true, alignment: 'right', margin: [0, 20, 0, 0] }
+        ]
+      },
+      { canvas: [{ type: 'line', x1: 0, y1: 10, x2: 515, y2: 10, lineWidth: 1 }] },
+      '\n',
+      {
+        columns: [
+          { text: [ {text:'CLIENTE:\n', bold:true}, el('cName').value, '\n', el('cPhone').value, '\n', el('cAddr').value ] },
+          { text: [ {text:'RIFERIMENTI:\n', bold:true}, `N°: ${el('qNum').value}`, `\nData: ${el('qDate').value}` ], alignment: 'right' }
+        ]
+      },
+      '\n',
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', 'auto', 'auto'],
+          body: [
+            [ {text:'DESCRIZIONE', fillColor:'#eee', bold:true}, {text:'MISURE', fillColor:'#eee', bold:true}, {text:'NOTE', fillColor:'#eee', bold:true} ],
+            ...rooms.map(r => [
+              { text: `${r.name}\nPareti: ${r.wallItem}\n${r.hasCeil ? 'Soffitto: '+r.ceilItem : ''}`, fontSize: 10 },
+              { text: `${r.l}x${r.w}x${r.h}`, fontSize: 10 },
+              { text: r.extra.join(', '), fontSize: 9, italics: true }
+            ])
+          ]
+        }
+      },
+      '\n',
+      {
+        columns: [
+          { width: '60%', text: [ {text: 'STIMA MATERIALI:\n', bold:true, fontSize:10}, {text: matStr, fontSize:9} ] },
+          { width: '40%', table: {
+              widths: ['*', 'auto'],
+              body: [
+                ['Lavori:', d.totalWork.toFixed(2)+' €'],
+                ['Manodopera:', d.labor.toFixed(2)+' €'],
+                ['Sconto:', '-'+d.disc.toFixed(2)+' €'],
+                ['Imponibile:', d.net.toFixed(2)+' €'],
+                [{text:'TOTALE', bold:true}, {text: d.final.toFixed(2)+' €', bold:true, fontSize:14}]
+              ]
+            }
+          }
+        ]
+      },
+      '\n\n',
+      { text: 'TERMINI E CONDIZIONI:', bold: true, fontSize: 10 },
+      { text: terms, fontSize: 9 },
+      '\n\n',
+      {
+        columns: [
+          { text: 'Timbro e Firma Ditta', alignment:'center', fontSize: 9 },
+          { text: 'Firma Cliente per Accettazione', alignment:'center', fontSize: 9 }
+        ]
+      },
+      {
+        columns: [
+          {}, // Spazio per timbro ditta (vuoto o logo)
+          signImg ? { image: signImg, width: 100, alignment:'center' } : { text:'__________________', alignment:'center', margin:[0,30,0,0] }
+        ]
+      },
+      pdfPhotos.length ? { text: '\nALLEGATI FOTOGRAFICI', pageBreak: 'before', style:'header' } : {},
+      pdfPhotos.length ? { columns: [ pdfPhotos.slice(0,2), pdfPhotos.slice(2,4) ] } : {}
+    ]
+  };
+  
+  pdfMake.createPdf(doc).download(`Preventivo-${el('cName').value}.pdf`);
+}
+
+function clearSignature() { signaturePad.clear(); }
+
+/* --- WHATSAPP --- */
+function sendWhatsapp() {
+  const d = calc();
+  const txt = `Ciao ${el('cName').value}, ti invio il preventivo ${el('qNum').value}.\n\nImporto Totale: ${d.final.toFixed(2)}€\n\nFammi sapere se posso procedere!`;
+  window.open(`https://wa.me/${el('cPhone').value.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(txt)}`);
+}
+
+/* --- ARCHIVIO --- */
+async function openArchive() {
+  const all = await db.quotes.toArray();
+  const list = all.map(q => `<li>${q.name} - ${q.date} <button onclick="loadQuote(${q.id})">Apri</button></li>`).join('');
+  const div = document.createElement('div');
+  div.className = 'modal open';
+  div.innerHTML = `<div class="modal-content"><h2>Archivio</h2><ul>${list||'Nessun preventivo'}</ul><button class="btn-sec" onclick="this.parentElement.parentElement.remove()">Chiudi</button></div>`;
+  document.body.appendChild(div);
+}
+
+/* --- UTILS --- */
+const toBase64 = file => new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result); r.onerror = rej; });
+function newQuote() { if(confirm("Nuovo preventivo?")) { rooms=[]; photos=[]; signaturePad.clear(); el('cName').value=''; el('cPhone').value=''; el('cAddr').value=''; addRoom(); } }
+
+// Start
+addRoom();
+</script>
+</body>
+</html>
