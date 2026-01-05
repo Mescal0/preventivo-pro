@@ -17,51 +17,98 @@
   <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-192.png">
 
   <style>
-    :root { --p: #0066cc; --bg: #f0f2f5; --txt: #333; }
-    body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--txt); padding-bottom: 40px; }
-    
-    /* Header */
-    header { background: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
-    h1 { margin: 0; font-size: 18px; color: var(--p); font-weight: 800; }
-    
+    :root { --p: #2563eb; --p-dark: #1d4ed8; --bg: #f1f5f9; --txt: #1e293b; --success: #10b981; --danger: #ef4444; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--txt); padding-bottom: 40px; }
+
+    /* Header con gradiente */
+    header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%); padding: 16px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(37,99,235,0.3); display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 20px; color: #fff; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    header span { color: rgba(255,255,255,0.8); }
+
     /* Layout */
     .wrap { max-width: 800px; margin: 0 auto; padding: 16px; }
-    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .card h2 { margin: 0 0 12px 0; font-size: 16px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; color: #444; display: flex; justify-content: space-between; align-items: center; }
-    
+    .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04); }
+    .card h2 { margin: 0 0 14px 0; font-size: 15px; font-weight: 700; border-bottom: none; padding-bottom: 0; color: #475569; display: flex; justify-content: space-between; align-items: center; }
+    .card h2::before { content: ''; width: 4px; height: 20px; background: var(--p); border-radius: 2px; margin-right: 10px; }
+
     /* Grid & Inputs */
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     .row { display: flex; gap: 10px; align-items: center; }
-    label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-    input:focus { outline: 2px solid var(--p); border-color: transparent; }
-    
-    /* Bottoni */
-    button { padding: 10px 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px; transition: 0.2s; }
-    .btn-primary { background: var(--p); color: white; }
-    .btn-danger { background: #ffebee; color: #c62828; }
-    .btn-sec { background: #e3f2fd; color: var(--p); }
-    .btn-icon { padding: 8px; background: #eee; border-radius: 50%; }
+    label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; background: #f8fafc; transition: all 0.2s; }
+    input:focus, select:focus { outline: none; border-color: var(--p); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    /* Bottoni migliorati */
+    button { padding: 12px 18px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
+    .btn-sec { background: #eff6ff; color: var(--p); border: 1px solid #bfdbfe; }
+    .btn-sec:hover { background: #dbeafe; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
+    .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; box-shadow: 0 2px 8px rgba(37,211,102,0.3); }
+    .btn-whatsapp:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,211,102,0.4); }
+
+    /* Switch Toggle moderno */
+    .switch-container { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 26px; transition: 0.3s; }
+    .switch-slider:before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .switch input:checked + .switch-slider { background: var(--p); }
+    .switch input:checked + .switch-slider:before { transform: translateX(22px); }
+    .switch-label { font-size: 13px; font-weight: 600; color: #475569; }
+
+    /* Stanza Card migliorata */
+    .room-card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--p); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0; }
+    .room-header input { font-weight: 700; font-size: 15px; border: none; background: transparent; padding: 4px 0; color: var(--txt); }
+    .room-header input:focus { outline: none; border-bottom: 2px solid var(--p); }
+    .dim-group { display: flex; gap: 8px; align-items: flex-end; }
+    .dim-item { flex: 1; text-align: center; }
+    .dim-item label { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 6px; }
+    .dim-item input { text-align: center; padding: 10px 6px; }
+    .section-divider { height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 14px 0; }
+    .treatment-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .treatment-box { background: #f8fafc; border-radius: 10px; padding: 12px; }
+    .treatment-box.ceiling { background: linear-gradient(135deg, #fefce8, #fef9c3); border: 1px solid #fde047; }
+    .treatment-box.ceiling.disabled { background: #f1f5f9; border: 1px solid #e2e8f0; opacity: 0.6; }
+    .treatment-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .extras-section { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
+    .extras-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 
     /* Firma Canvas */
-    canvas#signaturePad { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 150px; background: #fff; touch-action: none; }
+    canvas#signaturePad { border: 2px dashed #cbd5e1; border-radius: 12px; width: 100%; height: 150px; background: #fff; touch-action: none; }
 
     /* Modale Configurazione */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal.open { display: flex; }
-    .modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; border-radius: 12px; padding: 20px; }
+    .modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; border-radius: 16px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
 
     /* Utility */
     .hidden { display: none !important; }
-    .pill { background: #f5f5f5; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: 1px solid #ddd; }
-    .pill input:checked + span { color: var(--p); font-weight: bold; }
-    .kpi-box { background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #eee; }
-    .kpi-val { font-size: 18px; font-weight: bold; color: var(--p); }
+    .pill { background: #f1f5f9; padding: 8px 14px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 2px solid #e2e8f0; transition: all 0.2s; }
+    .pill:hover { border-color: #cbd5e1; background: #e2e8f0; }
+    .pill input { display: none; }
+    .pill.checked { background: #eff6ff; border-color: var(--p); color: var(--p); }
+    .kpi-box { background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 14px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
+    .kpi-box.highlight { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-color: #6ee7b7; }
+    .kpi-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kpi-val { font-size: 22px; font-weight: 800; color: var(--p); }
+    .kpi-box.highlight .kpi-val { color: #059669; }
 
     /* Foto Grid */
-    .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 10px; }
-    .foto-item { aspect-ratio: 1; position: relative; border-radius: 8px; overflow: hidden; }
+    .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-top: 12px; }
+    .foto-item { aspect-ratio: 1; position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .foto-item img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-item button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border-radius: 50%; background: rgba(239,68,68,0.9); color: white; font-size: 14px; }
+
+    /* Action buttons row */
+    .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .action-row button { padding: 14px 10px; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -69,11 +116,11 @@
 <header>
   <div>
     <h1>Preventivo PRO</h1>
-    <span style="font-size:11px; color:#666;">Ultimate Edition</span>
+    <span style="font-size:11px;">Ultimate Edition</span>
   </div>
   <div class="row">
-    <button class="btn-sec" onclick="openConfig()">⚙️ Configura</button>
-    <button class="btn-primary" onclick="newQuote()">➕ Nuovo</button>
+    <button class="btn-sec" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);" onclick="openConfig()">⚙️</button>
+    <button style="background:#fff; color:var(--p);" onclick="newQuote()">+ Nuovo</button>
   </div>
 </header>
 
@@ -129,15 +176,15 @@
 
   <div class="card">
     <h2>Totali</h2>
-    <div class="grid2">
-      <div><label>Manodopera (€)</label><input type="number" id="laborCost" value="0" oninput="calc()"></div>
-      <div><label>Sconto (€)</label><input type="number" id="discount" value="0" oninput="calc()"></div>
-      <div><label>IVA (%)</label><select id="ivaRate" onchange="calc()"><option value="0">0%</option><option value="15">15%</option><option value="20" selected>20%</option></select></div>
+    <div class="grid3">
+      <div><label>Manodopera €</label><input type="number" id="laborCost" value="0" oninput="calc()"></div>
+      <div><label>Sconto €</label><input type="number" id="discount" value="0" oninput="calc()"></div>
+      <div><label>IVA</label><select id="ivaRate" onchange="calc()"><option value="0">0%</option><option value="15">15%</option><option value="20" selected>20%</option></select></div>
     </div>
-    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-    <div class="grid2" style="margin-bottom:15px;">
-      <div class="kpi-box"><div class="label" style="font-size:11px;">IMPONIBILE</div><div class="kpi-val" id="netTotal">0€</div></div>
-      <div class="kpi-box" style="background:#e8f5e9; border-color:#c8e6c9;"><div class="label" style="font-size:11px;">TOTALE</div><div class="kpi-val" style="color:#2e7d32;" id="grandTotal">0€</div></div>
+    <div class="section-divider"></div>
+    <div class="grid2">
+      <div class="kpi-box"><div class="kpi-label">Imponibile</div><div class="kpi-val" id="netTotal">0 €</div></div>
+      <div class="kpi-box highlight"><div class="kpi-label">Totale Finale</div><div class="kpi-val" id="grandTotal">0 €</div></div>
     </div>
   </div>
 
@@ -150,10 +197,10 @@
     <div style="font-size:11px; color:#666; text-align:center; margin-top:5px;">Firma qui sopra col dito</div>
   </div>
 
-  <div class="row" style="margin-bottom:40px;">
-    <button class="btn-sec" style="flex:1" onclick="openArchive()">📂 Archivio</button>
-    <button class="btn-primary" style="flex:1" onclick="downloadPDF()">📄 Scarica PDF</button>
-    <button style="background:#25D366; color:#fff; flex:1;" onclick="sendWhatsapp()">📲 WhatsApp</button>
+  <div class="action-row" style="margin-bottom:40px;">
+    <button class="btn-sec" onclick="openArchive()">📂 Archivio</button>
+    <button class="btn-primary" onclick="downloadPDF()">📄 PDF</button>
+    <button class="btn-whatsapp" onclick="sendWhatsapp()">📲 WhatsApp</button>
   </div>
 
 </div>
@@ -250,47 +297,81 @@ function addRoom() {
 
 function renderRooms() {
   const c = el('roomsContainer'); c.innerHTML = '';
-  // Crea le opzioni per le select in base al listino attuale
   const opts = prices.map(p => `<option value="${p.name}">${p.name} (${p.price}€)</option>`).join('');
-  const checkboxes = prices.filter(p => p.price < 9).map((p, i) => `<label class="pill"><input type="checkbox" data-idx="${i}" onchange="toggleExtra(this, '__IDX__', '${p.name}')"> ${p.name}</label>`).join('');
+  const extraPrices = prices.filter(p => p.price < 9);
 
   rooms.forEach((r, i) => {
-    let box = checkboxes.replace(/__IDX__/g, i);
-    // Ripristina check
-    r.extra.forEach(ex => { box = box.replace(`data-idx="${prices.findIndex(p=>p.name===ex)}"`, `checked`); });
-
     const div = document.createElement('div');
-    div.className = 'card';
-    div.style.background = '#fcfcfc';
+    div.className = 'room-card';
+
+    // Genera pills per extra
+    const extrasHtml = extraPrices.map(p => {
+      const isChecked = r.extra.includes(p.name);
+      return `<span class="pill ${isChecked ? 'checked' : ''}" onclick="toggleExtraPill(this, ${i}, '${p.name}')">${p.name}</span>`;
+    }).join('');
+
     div.innerHTML = `
-      <div class="row" style="justify-content:space-between; margin-bottom:10px;">
-        <input value="${r.name}" style="font-weight:bold; width:60%" oninput="rooms[${i}].name=this.value">
-        <button class="btn-danger" style="padding:5px 10px;" onclick="rooms.splice(${i},1); renderRooms(); calc()">🗑️</button>
+      <div class="room-header">
+        <input value="${r.name}" oninput="rooms[${i}].name=this.value" placeholder="Nome stanza">
+        <button class="btn-danger" style="padding:6px 10px; font-size:12px;" onclick="rooms.splice(${i},1); renderRooms(); calc()">🗑️</button>
       </div>
-      <div class="grid2">
-        <div><label>Lungh.</label><input type="number" value="${r.l||''}" placeholder="0" oninput="rooms[${i}].l=+this.value; calc()"></div>
-        <div><label>Largh.</label><input type="number" value="${r.w||''}" placeholder="0" oninput="rooms[${i}].w=+this.value; calc()"></div>
-        <div><label>Alt.</label><input type="number" value="${r.h||''}" placeholder="0" oninput="rooms[${i}].h=+this.value; calc()"></div>
+
+      <div class="dim-group">
+        <div class="dim-item">
+          <label>📏 Lung.</label>
+          <input type="number" value="${r.l||''}" placeholder="0" oninput="rooms[${i}].l=+this.value; calc()">
+        </div>
+        <div class="dim-item">
+          <label>📐 Larg.</label>
+          <input type="number" value="${r.w||''}" placeholder="0" oninput="rooms[${i}].w=+this.value; calc()">
+        </div>
+        <div class="dim-item">
+          <label>↕️ Alt.</label>
+          <input type="number" value="${r.h||''}" placeholder="0" oninput="rooms[${i}].h=+this.value; calc()">
+        </div>
       </div>
-      <hr style="border-top:1px dashed #ddd; margin:10px 0;">
-      <div class="grid2">
-        <div>
-          <label>Pareti</label>
+
+      <div class="section-divider"></div>
+
+      <div class="treatment-row">
+        <div class="treatment-box">
+          <div class="treatment-label">🖌️ Pareti</div>
           <select onchange="rooms[${i}].wallItem=this.value; calc()">
             ${opts.replace(`value="${r.wallItem}"`, `value="${r.wallItem}" selected`)}
           </select>
         </div>
-        <div>
-          <label class="pill" style="margin-bottom:4px;"><input type="checkbox" onchange="rooms[${i}].hasCeil=this.checked; renderRooms(); calc()" ${r.hasCeil?'checked':''}> Soffitto</label>
-          ${r.hasCeil ? `<select onchange="rooms[${i}].ceilItem=this.value; calc()">${opts.replace(`value="${r.ceilItem}"`, `value="${r.ceilItem}" selected`)}</select>` : ''}
+        <div class="treatment-box ceiling ${r.hasCeil ? '' : 'disabled'}">
+          <div class="switch-container">
+            <label class="switch">
+              <input type="checkbox" ${r.hasCeil ? 'checked' : ''} onchange="rooms[${i}].hasCeil=this.checked; renderRooms(); calc()">
+              <span class="switch-slider"></span>
+            </label>
+            <span class="switch-label">⬆️ Soffitto</span>
+          </div>
+          ${r.hasCeil ? `<select onchange="rooms[${i}].ceilItem=this.value; calc()">${opts.replace(`value="${r.ceilItem}"`, `value="${r.ceilItem}" selected`)}</select>` : '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:8px;">Disattivato</div>'}
         </div>
       </div>
-      <div style="margin-top:10px;">
-        <label>Extra:</label> ${box}
-      </div>
+
+      ${extraPrices.length ? `
+      <div class="extras-section">
+        <label style="margin-bottom:0;">✨ Extra</label>
+        <div class="extras-wrap">${extrasHtml}</div>
+      </div>` : ''}
     `;
     c.appendChild(div);
   });
+}
+
+function toggleExtraPill(el, roomIdx, name) {
+  const r = rooms[roomIdx];
+  if(r.extra.includes(name)) {
+    r.extra = r.extra.filter(x => x !== name);
+    el.classList.remove('checked');
+  } else {
+    r.extra.push(name);
+    el.classList.add('checked');
+  }
+  calc();
 }
 
 function toggleExtra(chk, roomIdx, name) {
@@ -336,8 +417,8 @@ function calc() {
   const ivaPct = +el('ivaRate').value;
   const final = net * (1 + ivaPct/100);
 
-  el('netTotal').innerText = net.toFixed(2) + '€';
-  el('grandTotal').innerText = final.toFixed(2) + '€';
+  el('netTotal').innerText = net.toFixed(2) + ' €';
+  el('grandTotal').innerText = final.toFixed(2) + ' €';
 
   // Render Materiali
   let matHtml = '';
