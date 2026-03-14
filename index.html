@@ -275,9 +275,14 @@ const savedLogo = localStorage.getItem('logoData');
 if(savedLogo) { el('logoImg').src = savedLogo; el('logoImg').style.display='block'; }
 el('logoInput').onchange = async e => {
   const f = e.target.files[0]; if(!f) return;
-  const b64 = await toBase64(f);
-  localStorage.setItem('logoData', b64);
-  el('logoImg').src = b64; el('logoImg').style.display='block';
+  try {
+    const b64 = await toBase64(f);
+    localStorage.setItem('logoData', b64);
+    el('logoImg').src = b64; el('logoImg').style.display='block';
+  } catch(err) {
+    console.error('Errore caricamento logo:', err);
+    alert('Errore nel caricamento del logo: ' + err.message);
+  }
 };
 
 /* --- GESTIONE STANZE --- */
@@ -374,13 +379,6 @@ function toggleExtraPill(el, roomIdx, name) {
   calc();
 }
 
-function toggleExtra(chk, roomIdx, name) {
-  const r = rooms[roomIdx];
-  if(chk.checked) r.extra.push(name);
-  else r.extra = r.extra.filter(x => x !== name);
-  calc();
-}
-
 /* --- CALCOLI & MATERIALI --- */
 function calc() {
   let totalWork = 0;
@@ -431,16 +429,26 @@ function calc() {
 }
 
 /* --- FOTO --- */
+let photoURLs = [];
 el('camInput').onchange = async e => {
-  for(let f of e.target.files) {
-    const c = await imageCompression(f, { maxSizeMB: 1, maxWidthOrHeight: 1200 });
-    photos.push(c);
+  try {
+    for(let f of e.target.files) {
+      const c = await imageCompression(f, { maxSizeMB: 1, maxWidthOrHeight: 1200 });
+      photos.push(c);
+    }
+    renderPhotos();
+  } catch(err) {
+    console.error('Errore compressione foto:', err);
+    alert('Errore nella compressione della foto: ' + err.message);
   }
-  renderPhotos();
 };
 function renderPhotos() {
+  photoURLs.forEach(u => URL.revokeObjectURL(u));
+  photoURLs = [];
   el('photoGrid').innerHTML = photos.map((p,i) => {
-    return `<div class="foto-item"><img src="${URL.createObjectURL(p)}"><button onclick="photos.splice(${i},1);renderPhotos()" style="position:absolute;top:0;right:0;background:red;color:white;border:none;">×</button></div>`;
+    const url = URL.createObjectURL(p);
+    photoURLs.push(url);
+    return `<div class="foto-item"><img src="${url}"><button onclick="photos.splice(${i},1);renderPhotos()" style="position:absolute;top:0;right:0;background:red;color:white;border:none;">×</button></div>`;
   }).join('');
 }
 
@@ -483,9 +491,10 @@ function resetPrices() {
 async function downloadPDF() {
   if(signaturePad.isEmpty()) { if(!confirm("Manca la firma. Scaricare lo stesso?")) return; }
   
-  const d = calc();
-  const logo = localStorage.getItem('logoData');
-  const signImg = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
+  try {
+    const d = calc();
+    const logo = localStorage.getItem('logoData');
+    const signImg = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
   
   // Foto
   const pdfPhotos = [];
@@ -565,6 +574,10 @@ async function downloadPDF() {
   };
   
   pdfMake.createPdf(doc).download(`Preventivo-${el('cName').value}.pdf`);
+  } catch(err) {
+    console.error('Errore generazione PDF:', err);
+    alert('Errore nella generazione del PDF: ' + err.message);
+  }
 }
 
 function clearSignature() { signaturePad.clear(); }
@@ -578,20 +591,75 @@ function sendWhatsapp() {
 
 /* --- ARCHIVIO --- */
 async function openArchive() {
-  const all = await db.quotes.toArray();
-  const list = all.map(q => `<li>${q.name} - ${q.date} <button onclick="loadQuote(${q.id})">Apri</button></li>`).join('');
-  const div = document.createElement('div');
-  div.className = 'modal open';
-  div.innerHTML = `<div class="modal-content"><h2>Archivio</h2><ul>${list||'Nessun preventivo'}</ul><button class="btn-sec" onclick="this.parentElement.parentElement.remove()">Chiudi</button></div>`;
-  document.body.appendChild(div);
+  try {
+    const all = await db.quotes.toArray();
+    const div = document.createElement('div');
+    div.className = 'modal open';
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Archivio';
+    content.appendChild(h2);
+    const ul = document.createElement('ul');
+    if(all.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = 'Nessun preventivo';
+      ul.appendChild(li);
+    } else {
+      all.forEach(q => {
+        const li = document.createElement('li');
+        li.textContent = `${q.name} - ${q.date} `;
+        const btn = document.createElement('button');
+        btn.textContent = 'Apri';
+        btn.onclick = () => loadQuote(q.id);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+    }
+    content.appendChild(ul);
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn-sec';
+    closeBtn.textContent = 'Chiudi';
+    closeBtn.onclick = () => div.remove();
+    content.appendChild(closeBtn);
+    div.appendChild(content);
+    document.body.appendChild(div);
+  } catch(err) {
+    console.error('Errore apertura archivio:', err);
+    alert('Errore nell\'apertura dell\'archivio: ' + err.message);
+  }
 }
 
 /* --- UTILS --- */
 const toBase64 = file => new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result); r.onerror = rej; });
-function newQuote() { if(confirm("Nuovo preventivo?")) { rooms=[]; photos=[]; signaturePad.clear(); el('cName').value=''; el('cPhone').value=''; el('cAddr').value=''; addRoom(); } }
+
+function newQuote() {
+  if(confirm("Nuovo preventivo?")) {
+    rooms=[]; photos=[];
+    photoURLs.forEach(u => URL.revokeObjectURL(u));
+    photoURLs=[];
+    signaturePad.clear();
+    el('cName').value=''; el('cPhone').value=''; el('cAddr').value='';
+    el('photoGrid').innerHTML='';
+    addRoom();
+  }
+}
+
+async function checkStorageQuota() {
+  if(navigator.storage && navigator.storage.estimate) {
+    try {
+      const {usage, quota} = await navigator.storage.estimate();
+      const pctUsed = (usage / quota * 100).toFixed(1);
+      if(usage / quota > 0.9) {
+        alert(`⚠️ Spazio di archiviazione quasi pieno (${pctUsed}%).\nCancella vecchi preventivi dall'archivio per liberare spazio.`);
+      }
+    } catch(e) { /* ignore */ }
+  }
+}
 
 // Start
 addRoom();
+checkStorageQuota();
 </script>
 </body>
 </html>
