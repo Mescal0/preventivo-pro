@@ -1,4 +1,4 @@
-const CACHE = "preventivo-pro-v4";
+const CACHE = "preventivo-pro-v5";
 const ASSETS = [
   "./",
   "./index.html",
