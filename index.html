@@ -197,8 +197,9 @@
     <div style="font-size:11px; color:#666; text-align:center; margin-top:5px;">Firma qui sopra col dito</div>
   </div>
 
-  <div class="action-row" style="margin-bottom:40px;">
+  <div class="action-row" style="margin-bottom:40px; grid-template-columns: 1fr 1fr 1fr 1fr;">
     <button class="btn-sec" onclick="openArchive()">📂 Archivio</button>
+    <button class="btn-success" onclick="saveQuote()">💾 Salva</button>
     <button class="btn-primary" onclick="downloadPDF()">📄 PDF</button>
     <button class="btn-whatsapp" onclick="sendWhatsapp()">📲 WhatsApp</button>
   </div>
@@ -589,6 +590,76 @@ function sendWhatsapp() {
   window.open(`https://wa.me/${el('cPhone').value.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(txt)}`);
 }
 
+/* --- SALVA PREVENTIVO --- */
+async function saveQuote() {
+  try {
+    const d = calc();
+    const signImg = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
+    const photoB64 = await Promise.all(photos.map(p => toBase64(p)));
+    const data = {
+      date: el('qDate').value,
+      num: el('qNum').value,
+      name: el('cName').value,
+      phone: el('cPhone').value,
+      addr: el('cAddr').value,
+      rooms: JSON.parse(JSON.stringify(rooms)),
+      laborCost: el('laborCost').value,
+      discount: el('discount').value,
+      ivaRate: el('ivaRate').value,
+      terms,
+      signImg,
+      photos: photoB64,
+      logo: localStorage.getItem('logoData'),
+      totals: { net: d.net, final: d.final }
+    };
+    await db.quotes.add(data);
+    alert('Preventivo salvato!');
+  } catch(err) {
+    console.error('Errore salvataggio:', err);
+    alert('Errore nel salvataggio: ' + err.message);
+  }
+}
+
+/* --- CARICA PREVENTIVO --- */
+async function loadQuote(id) {
+  try {
+    const q = await db.quotes.get(id);
+    if(!q) { alert('Preventivo non trovato'); return; }
+    el('qDate').value = q.date || '';
+    el('qNum').value = q.num || '';
+    el('cName').value = q.name || '';
+    el('cPhone').value = q.phone || '';
+    el('cAddr').value = q.addr || '';
+    el('laborCost').value = q.laborCost || 0;
+    el('discount').value = q.discount || 0;
+    el('ivaRate').value = q.ivaRate || 20;
+    rooms = q.rooms || [];
+    // Carica foto come Blob
+    photos = [];
+    photoURLs.forEach(u => URL.revokeObjectURL(u));
+    photoURLs = [];
+    if(q.photos && q.photos.length) {
+      photos = await Promise.all(q.photos.map(async b64 => {
+        const res = await fetch(b64);
+        return res.blob();
+      }));
+    }
+    // Firma
+    signaturePad.clear();
+    if(q.signImg) {
+      signaturePad.fromDataURL(q.signImg);
+    }
+    renderRooms();
+    renderPhotos();
+    calc();
+    // Chiudi modal archivio
+    document.querySelectorAll('.modal.open').forEach(m => m.remove());
+  } catch(err) {
+    console.error('Errore caricamento preventivo:', err);
+    alert('Errore nel caricamento: ' + err.message);
+  }
+}
+
 /* --- ARCHIVIO --- */
 async function openArchive() {
   try {
@@ -598,21 +669,45 @@ async function openArchive() {
     const content = document.createElement('div');
     content.className = 'modal-content';
     const h2 = document.createElement('h2');
-    h2.textContent = 'Archivio';
+    h2.textContent = 'Archivio Preventivi';
     content.appendChild(h2);
     const ul = document.createElement('ul');
+    ul.style.listStyle = 'none';
+    ul.style.padding = '0';
     if(all.length === 0) {
       const li = document.createElement('li');
-      li.textContent = 'Nessun preventivo';
+      li.textContent = 'Nessun preventivo salvato';
+      li.style.color = '#94a3b8';
       ul.appendChild(li);
     } else {
-      all.forEach(q => {
+      all.slice().reverse().forEach(q => {
         const li = document.createElement('li');
-        li.textContent = `${q.name} - ${q.date} `;
-        const btn = document.createElement('button');
-        btn.textContent = 'Apri';
-        btn.onclick = () => loadQuote(q.id);
-        li.appendChild(btn);
+        li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9;';
+        const info = document.createElement('span');
+        info.textContent = `${q.num || '—'} · ${q.name || 'Senza nome'} · ${q.date || ''}`;
+        info.style.fontSize = '13px';
+        const btnRow = document.createElement('div');
+        btnRow.style.display = 'flex';
+        btnRow.style.gap = '6px';
+        const btnOpen = document.createElement('button');
+        btnOpen.textContent = 'Apri';
+        btnOpen.className = 'btn-primary';
+        btnOpen.style.padding = '6px 12px; font-size:12px';
+        btnOpen.onclick = () => loadQuote(q.id);
+        const btnDel = document.createElement('button');
+        btnDel.textContent = '🗑️';
+        btnDel.className = 'btn-danger';
+        btnDel.style.padding = '6px 10px';
+        btnDel.onclick = async () => {
+          if(confirm('Eliminare questo preventivo?')) {
+            await db.quotes.delete(q.id);
+            li.remove();
+          }
+        };
+        btnRow.appendChild(btnOpen);
+        btnRow.appendChild(btnDel);
+        li.appendChild(info);
+        li.appendChild(btnRow);
         ul.appendChild(li);
       });
     }
@@ -620,6 +715,7 @@ async function openArchive() {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn-sec';
     closeBtn.textContent = 'Chiudi';
+    closeBtn.style.marginTop = '16px';
     closeBtn.onclick = () => div.remove();
     content.appendChild(closeBtn);
     div.appendChild(content);
@@ -633,16 +729,25 @@ async function openArchive() {
 /* --- UTILS --- */
 const toBase64 = file => new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result); r.onerror = rej; });
 
-function newQuote() {
-  if(confirm("Nuovo preventivo?")) {
-    rooms=[]; photos=[];
-    photoURLs.forEach(u => URL.revokeObjectURL(u));
-    photoURLs=[];
-    signaturePad.clear();
-    el('cName').value=''; el('cPhone').value=''; el('cAddr').value='';
-    el('photoGrid').innerHTML='';
-    addRoom();
+async function newQuote() {
+  if(!confirm("Creare un nuovo preventivo? Il preventivo corrente verrà perso se non salvato.")) return;
+  const hasDati = el('cName').value || rooms.length > 1 || photos.length > 0;
+  if(hasDati && confirm("Vuoi salvare il preventivo corrente prima di procedere?")) {
+    await saveQuote();
   }
+  rooms=[]; photos=[];
+  photoURLs.forEach(u => URL.revokeObjectURL(u));
+  photoURLs=[];
+  signaturePad.clear();
+  el('cName').value=''; el('cPhone').value=''; el('cAddr').value='';
+  el('qNum').value = new Date().getFullYear() + '/' + String(Date.now()).slice(-3);
+  el('qDate').value = today();
+  el('laborCost').value = 0;
+  el('discount').value = 0;
+  el('photoGrid').innerHTML='';
+  renderRooms();
+  calc();
+  addRoom();
 }
 
 async function checkStorageQuota() {
